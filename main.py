@@ -11,7 +11,7 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption('Python Chess')
 
 # Colors
-WHITE = (238, 238, 210)
+WHITE = (163, 163, 145)
 GREEN = (0, 255, 0)
 BLACK = (118, 150, 86)
 
@@ -50,6 +50,38 @@ white_knight = pygame.transform.scale(white_knight, piece_size)
 white_rook = pygame.transform.scale(white_rook, piece_size)
 white_pawn = pygame.transform.scale(white_pawn, piece_size)
 
+selected_piece = None
+selected_position = (0, 0)
+
+# Inicijalizacija šahovske ploče kao 8x8 matrice
+chess_board = [[None for _ in range(8)] for _ in range(8)]
+
+# Postavljanje bijelih figura
+for i in range(8):
+    chess_board[6][i] = 'white_pawn'
+chess_board[7][0] = 'white_rook'
+chess_board[7][7] = 'white_rook'
+chess_board[7][1] = 'white_knight'
+chess_board[7][6] = 'white_knight'
+chess_board[7][2] = 'white_bishop'
+chess_board[7][5] = 'white_bishop'
+chess_board[7][3] = 'white_queen'
+chess_board[7][4] = 'white_king'
+
+# Postavljanje crnih figura
+for i in range(8):
+    chess_board[1][i] = 'black_pawn'
+chess_board[0][0] = 'black_rook'
+chess_board[0][7] = 'black_rook'
+chess_board[0][1] = 'black_knight'
+chess_board[0][6] = 'black_knight'
+chess_board[0][2] = 'black_bishop'
+chess_board[0][5] = 'black_bishop'
+chess_board[0][3] = 'black_queen'
+chess_board[0][4] = 'black_king'
+
+
+
 
 # Main game loop
 running = True
@@ -58,46 +90,70 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Logic for moving pieces will be implemented here
-            pass
+            x, y = event.pos
+            # Pretvorite koordinate miša u indekse ploče
+            row = y // 100
+            col = x // 100
+            selected_position = (row, col)
+            # Ovdje dodajte logiku za određivanje koja je figura odabrana
+            selected_piece = chess_board[row][col]
+        elif event.type == pygame.MOUSEBUTTONUP and selected_piece:
+            new_x, new_y = event.pos
+            new_row = new_y // 100
+            new_col = new_x // 100
+            chess_board[new_row][new_col] = selected_piece
+            chess_board[selected_position[0]][selected_position[1]] = None
+            selected_piece = None
+
     
     # Clear the screen and redraw everything
     screen.fill(WHITE)
     
-    # Code for drawing the chessboard and pieces will go here
+    
+    # Code for drawing the chessboard and pieces
     for row in range(8):
         for col in range(8):
             color = WHITE if (row + col) % 2 == 0 else BLACK
             pygame.draw.rect(screen, color, pygame.Rect(col*100, row*100, 100, 100))
 
-    # Updating the display
+            piece = chess_board[row][col]
+            if piece:
+                if piece == 'white_pawn':
+                    screen.blit(white_pawn, (col * 100, row * 100))
+                elif piece == 'black_pawn':
+                    screen.blit(black_pawn, (col * 100, row * 100))
+                elif piece == 'white_rook':
+                    screen.blit(white_rook, (col * 100, row * 100))
+                elif piece == 'black_rook':
+                    screen.blit(black_rook, (col * 100, row * 100))
+                elif piece == 'white_knight':
+                    screen.blit(white_knight, (col * 100, row * 100))
+                elif piece == 'black_knight':
+                    screen.blit(black_knight, (col * 100, row * 100))
+                elif piece == 'white_bishop':
+                    screen.blit(white_bishop, (col * 100, row * 100))
+                elif piece == 'black_bishop':
+                    screen.blit(black_bishop, (col * 100, row * 100))
+                elif piece == 'white_queen':
+                    screen.blit(white_queen, (col * 100, row * 100))
+                elif piece == 'black_queen':
+                    screen.blit(black_queen, (col * 100, row * 100))
+                elif piece == 'white_king':
+                    screen.blit(white_king, (col * 100, row * 100))
+                elif piece == 'black_king':
+                    screen.blit(black_king, (col * 100, row * 100))
             
-    # Positioning black pawn pieces       
-    for i in range(8):
-        screen.blit(black_pawn, (i * 100, 6 * 103))
-    # Positioning the other black pieces at starting positions
-    screen.blit(black_rook, (0, 7 * 102))
-    screen.blit(black_knight, (1 * 100, 7 * 102))
-    screen.blit(black_bishop, (2 * 100, 7 * 102))
-    screen.blit(black_queen, (3 * 100, 7 * 102))
-    screen.blit(black_king, (4 * 100, 7 * 102))
-    screen.blit(black_bishop, (5 * 100, 7 * 102))
-    screen.blit(black_knight, (6 * 100, 7 * 102))
-    screen.blit(black_rook, (7 * 100, 7 * 102))
 
-    # Positioning white pawn pieces
-    for i in range(8):
-        screen.blit(white_pawn, (i * 100, 1 * 120))
-    # Positioning the other white pieces at starting positions
-    screen.blit(white_rook, (0, 20))
-    screen.blit(white_knight, (1 * 100, 20))
-    screen.blit(white_bishop, (2 * 100, 20))
-    screen.blit(white_queen, (3 * 100, 20))
-    screen.blit(white_king, (4 * 100, 20))
-    screen.blit(white_bishop, (5 * 100, 20))
-    screen.blit(white_knight, (6 * 100, 20))
-    screen.blit(white_rook, (7 * 100, 20))
-        
+    for row in range(8):
+        for col in range(8):
+            piece = chess_board[row][col]
+            if piece:
+                # Ovdje dodajte kod za crtanje figure na osnovu tipa figure
+                # Na primjer: screen.blit(figure_image, (col*100, row*100))
+                pass
+
+
+    
     pygame.display.flip()
 
 # Closing Pygame and releasing resources
