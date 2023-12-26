@@ -53,10 +53,10 @@ white_pawn = pygame.transform.scale(white_pawn, piece_size)
 selected_piece = None
 selected_position = (0, 0)
 
-# Inicijalizacija šahovske ploče kao 8x8 matrice
+# Initializing the chessboard as an 8x8 matrix
 chess_board = [[None for _ in range(8)] for _ in range(8)]
 
-# Postavljanje bijelih figura
+# Placing the white pieces
 for i in range(8):
     chess_board[6][i] = 'white_pawn'
 chess_board[7][0] = 'white_rook'
@@ -68,7 +68,7 @@ chess_board[7][5] = 'white_bishop'
 chess_board[7][3] = 'white_queen'
 chess_board[7][4] = 'white_king'
 
-# Postavljanje crnih figura
+# Placing the black pieces
 for i in range(8):
     chess_board[1][i] = 'black_pawn'
 chess_board[0][0] = 'black_rook'
@@ -81,6 +81,90 @@ chess_board[0][3] = 'black_queen'
 chess_board[0][4] = 'black_king'
 
 
+# Function definitions for piece movements (pawn_moves, rook_moves, knight_moves, king_moves, queen_moves, bishop_moves)
+
+def pawn_moves(board, x, y, color):
+    moves = []
+    direction = 1 if color == 'black' else -1
+    if 0 <= y + direction < 8:
+        if board[y + direction][x] is None:
+            moves.append((x, y + direction))
+            if (color == 'white' and y == 6) or (color == 'black' and y == 1):
+                if board[y + 2 * direction][x] is None:
+                    moves.append((x, y + 2 * direction))
+        if x > 0 and board[y + direction][x - 1] is not None:
+            moves.append((x - 1, y + direction))
+        if x < 7 and board[y + direction][x + 1] is not None:
+            moves.append((x + 1, y + direction))
+    return moves
+
+def rook_moves(board, x, y):
+    moves = []
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    for dx, dy in directions:
+        nx, ny = x, y
+        while True:
+            nx, ny = nx + dx, ny + dy
+            if 0 <= nx < 8 and 0 <= ny < 8:
+                if board[ny][nx] is None:
+                    moves.append((nx, ny))
+                else:
+                    moves.append((nx, ny))
+                    break
+            else:
+                break
+    return moves
+
+def knight_moves(board, x, y):
+    moves = []
+    L_moves = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
+    for dx, dy in L_moves:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < 8 and 0 <= ny < 8:
+            moves.append((nx, ny))
+    return moves
+
+def king_moves(board, x, y):
+    moves = []
+    directions = [(1, 0), (1, 1), (1, -1), (0, 1), (0, -1), (-1, 0), (-1, 1), (-1, -1)]
+    for dx, dy in directions:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < 8 and 0 <= ny < 8:
+            moves.append((nx, ny))
+    return moves
+
+def queen_moves(board, x, y):
+    moves = []
+    directions = [(1, 0), (1, 1), (1, -1), (0, 1), (0, -1), (-1, 0), (-1, 1), (-1, -1)]
+    for dx, dy in directions:
+        nx, ny = x, y
+        while True:
+            nx, ny = nx + dx, ny + dy
+            if 0 <= nx < 8 and 0 <= ny < 8:
+                moves.append((nx, ny))
+                if board[ny][nx] is not None:  
+                    break
+            else:
+                break
+    return moves
+
+def bishop_moves(board, x, y):
+    moves = []
+    directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+    for dx, dy in directions:
+        nx, ny = x, y
+        while True:
+            nx, ny = nx + dx, ny + dy
+            if 0 <= nx < 8 and 0 <= ny < 8:
+                moves.append((nx, ny))
+                if board[ny][nx] is not None:  
+                    break
+            else:
+                break
+    return moves
+
+allowed_moves = []
+
 
 
 # Main game loop
@@ -91,20 +175,38 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             x, y = event.pos
-            # Pretvorite koordinate miša u indekse ploče
+            # Convert mouse coordinates to board indices
             row = y // 100
             col = x // 100
             selected_position = (row, col)
-            # Ovdje dodajte logiku za određivanje koja je figura odabrana
+            # Add logic here to determine which piece is selected
             selected_piece = chess_board[row][col]
+            if selected_piece:
+                # Reset allowed moves
+                allowed_moves = []
+                # Ovdje dodajte logiku za provjeru dozvoljenih poteza
+                if 'white_pawn' in selected_piece or 'black_pawn' in selected_piece:
+                    color = 'white' if 'white' in selected_piece else 'black'
+                    allowed_moves = pawn_moves(chess_board, col, row, color)
+                elif 'rook' in selected_piece:
+                    allowed_moves = rook_moves(chess_board, col, row)
+                elif 'knight' in selected_piece:
+                    allowed_moves = knight_moves(chess_board, col, row)
+                elif 'white_king' in selected_piece or 'black_king' in selected_piece:
+                    allowed_moves = king_moves(chess_board, col, row)
+                elif 'white_queen' in selected_piece or 'black_queen' in selected_piece:
+                    allowed_moves = queen_moves(chess_board, col, row)
+                elif 'white_bishop' in selected_piece or 'black_bishop' in selected_piece:
+                    allowed_moves = bishop_moves(chess_board, col, row)
         elif event.type == pygame.MOUSEBUTTONUP and selected_piece:
             new_x, new_y = event.pos
             new_row = new_y // 100
             new_col = new_x // 100
-            chess_board[new_row][new_col] = selected_piece
-            chess_board[selected_position[0]][selected_position[1]] = None
+            # Provjerite da li je potez unutar dozvoljenih poteza
+            if (new_col, new_row) in allowed_moves:
+                chess_board[new_row][new_col] = selected_piece
+                chess_board[selected_position[0]][selected_position[1]] = None
             selected_piece = None
-
     
     # Clear the screen and redraw everything
     screen.fill(WHITE)
@@ -115,7 +217,6 @@ while running:
         for col in range(8):
             color = WHITE if (row + col) % 2 == 0 else BLACK
             pygame.draw.rect(screen, color, pygame.Rect(col*100, row*100, 100, 100))
-
             piece = chess_board[row][col]
             if piece:
                 if piece == 'white_pawn':
@@ -148,8 +249,6 @@ while running:
         for col in range(8):
             piece = chess_board[row][col]
             if piece:
-                # Ovdje dodajte kod za crtanje figure na osnovu tipa figure
-                # Na primjer: screen.blit(figure_image, (col*100, row*100))
                 pass
 
 
