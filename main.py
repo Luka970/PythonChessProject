@@ -165,6 +165,8 @@ def bishop_moves(board, x, y):
 
 allowed_moves = []
 
+# After initialization
+is_white_turn = True
 
 
 # Main game loop
@@ -182,30 +184,33 @@ while running:
             # Add logic here to determine which piece is selected
             selected_piece = chess_board[row][col]
             if selected_piece:
-                # Reset allowed moves
-                allowed_moves = []
-                # Ovdje dodajte logiku za provjeru dozvoljenih poteza
-                if 'white_pawn' in selected_piece or 'black_pawn' in selected_piece:
-                    color = 'white' if 'white' in selected_piece else 'black'
-                    allowed_moves = pawn_moves(chess_board, col, row, color)
-                elif 'rook' in selected_piece:
-                    allowed_moves = rook_moves(chess_board, col, row)
-                elif 'knight' in selected_piece:
-                    allowed_moves = knight_moves(chess_board, col, row)
-                elif 'white_king' in selected_piece or 'black_king' in selected_piece:
-                    allowed_moves = king_moves(chess_board, col, row)
-                elif 'white_queen' in selected_piece or 'black_queen' in selected_piece:
-                    allowed_moves = queen_moves(chess_board, col, row)
-                elif 'white_bishop' in selected_piece or 'black_bishop' in selected_piece:
-                    allowed_moves = bishop_moves(chess_board, col, row)
+                piece_color = 'white' if 'white' in selected_piece else 'black'
+                if is_white_turn and piece_color == 'white' or not is_white_turn and piece_color == 'black':
+                    # Reset allowed moves
+                    allowed_moves = []
+                    # Determine the allowed moves based on the type of the selected piece
+                    if 'white_pawn' in selected_piece or 'black_pawn' in selected_piece:
+                        color = 'white' if 'white' in selected_piece else 'black'
+                        allowed_moves = pawn_moves(chess_board, col, row, color)
+                    elif 'rook' in selected_piece:
+                        allowed_moves = rook_moves(chess_board, col, row)
+                    elif 'knight' in selected_piece:
+                        allowed_moves = knight_moves(chess_board, col, row)
+                    elif 'white_king' in selected_piece or 'black_king' in selected_piece:
+                        allowed_moves = king_moves(chess_board, col, row)
+                    elif 'white_queen' in selected_piece or 'black_queen' in selected_piece:
+                        allowed_moves = queen_moves(chess_board, col, row)
+                    elif 'white_bishop' in selected_piece or 'black_bishop' in selected_piece:
+                        allowed_moves = bishop_moves(chess_board, col, row)
         elif event.type == pygame.MOUSEBUTTONUP and selected_piece:
             new_x, new_y = event.pos
             new_row = new_y // 100
             new_col = new_x // 100
-            # Provjerite da li je potez unutar dozvoljenih poteza
+            # Check if the move is within the allowed moves for the selected piece
             if (new_col, new_row) in allowed_moves:
                 chess_board[new_row][new_col] = selected_piece
                 chess_board[selected_position[0]][selected_position[1]] = None
+                is_white_turn = not is_white_turn
             selected_piece = None
     
     # Clear the screen and redraw everything
@@ -215,34 +220,38 @@ while running:
     # Code for drawing the chessboard and pieces
     for row in range(8):
         for col in range(8):
+            # Determine the color of the square based on its position
             color = WHITE if (row + col) % 2 == 0 else BLACK
             pygame.draw.rect(screen, color, pygame.Rect(col*100, row*100, 100, 100))
             piece = chess_board[row][col]
             if piece:
+                # Calculate the centered position
+                centered_x = col * 100 + (100 - piece_size[0]) // 2
+                centered_y = row * 100 + (100 - piece_size[1]) // 2
                 if piece == 'white_pawn':
-                    screen.blit(white_pawn, (col * 100, row * 100))
+                    screen.blit(white_pawn, (centered_x, centered_y))
                 elif piece == 'black_pawn':
-                    screen.blit(black_pawn, (col * 100, row * 100))
+                    screen.blit(black_pawn, (centered_x, centered_y))
                 elif piece == 'white_rook':
-                    screen.blit(white_rook, (col * 100, row * 100))
+                    screen.blit(white_rook, (centered_x, centered_y))
                 elif piece == 'black_rook':
-                    screen.blit(black_rook, (col * 100, row * 100))
+                    screen.blit(black_rook, (centered_x, centered_y))
                 elif piece == 'white_knight':
-                    screen.blit(white_knight, (col * 100, row * 100))
+                    screen.blit(white_knight, (centered_x, centered_y))
                 elif piece == 'black_knight':
-                    screen.blit(black_knight, (col * 100, row * 100))
+                    screen.blit(black_knight, (centered_x, centered_y))
                 elif piece == 'white_bishop':
-                    screen.blit(white_bishop, (col * 100, row * 100))
+                    screen.blit(white_bishop, (centered_x, centered_y))
                 elif piece == 'black_bishop':
-                    screen.blit(black_bishop, (col * 100, row * 100))
+                    screen.blit(black_bishop, (centered_x, centered_y))
                 elif piece == 'white_queen':
-                    screen.blit(white_queen, (col * 100, row * 100))
+                    screen.blit(white_queen, (centered_x, centered_y))
                 elif piece == 'black_queen':
-                    screen.blit(black_queen, (col * 100, row * 100))
+                    screen.blit(black_queen, (centered_x, centered_y))
                 elif piece == 'white_king':
-                    screen.blit(white_king, (col * 100, row * 100))
+                    screen.blit(white_king, (centered_x, centered_y))
                 elif piece == 'black_king':
-                    screen.blit(black_king, (col * 100, row * 100))
+                    screen.blit(black_king, (centered_x, centered_y))
             
 
     for row in range(8):
@@ -252,7 +261,7 @@ while running:
                 pass
 
 
-    
+    # Update the display with the new drawing
     pygame.display.flip()
 
 # Closing Pygame and releasing resources
